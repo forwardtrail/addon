@@ -1,0 +1,1 @@
+web: bundle exec ruby server/addon.rb -s Puma -p $PORT

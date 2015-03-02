@@ -1,0 +1,79 @@
+name: "YOUR_ADDON_NAME"
+
+title: "YOUR_ADDON_TITLE"
+
+short_description: "YOUR_ADDON_DESCRIPTION"
+
+# use `rake secret` to generate a new secret file
+secret: GENERATE_NEW_SECRET
+
+options:
+  simple_option:
+    title: "Option Title"
+    type: "string"
+    help: "A simple text option for your ForwardTrail Addon"
+    default_value: "a default value"
+
+  select_option:
+    title: "Select an Option"
+    type: "string"
+    help: "With this option enabled, you'll be able to tell this addon **yes** or **no**."
+    select:
+      - "option value 1"
+      - "option value 2"
+      - "option value 3"
+
+  boolean_option:
+    title: "Yes or No option"
+    type: "boolean"
+    help: "With this option enabled, you'll be able to tell this addon **yes** or **no**."
+
+# associate custom fields with your addon
+custom_fields:
+  -
+    title: "Some Custom Field 1"
+    visibility: "lists_only"
+  -
+    title: "Some Custom Field 2"
+    visibility: "default"
+
+# define which incoming event types you want the addon to receive (via webhook)
+event_types:
+  - "create_activity"
+  - "update_activity"
+  - "delete_activity"
+  - "create_contact"
+  - "update_contact"
+  - "delete_contact"
+  - "add_contact_to_list"
+  - "remove_contact_from_list"
+  - "create_list"
+  - "delete_list"
+  - "update_list"
+  - "create_pin"
+  - "delete_pin"
+  # ...more...
+
+environments:
+  # your production ForwardTrail account
+  production:
+    api_key: YOUR_API_KEY
+    api_host: "https://www.forwardtrail.com"
+
+    # for receiving webhooks (POST)
+    addon_url: YOUR_HOSTED_ADDON_URL
+
+    # minify assets before installing
+    minify: true
+
+  # your development ForwardTrail account
+  development:
+    api_key: YOUR_API_KEY
+    api_host: "https://www.forwardtrail.com"
+
+    # for receiving webhooks (POST)
+    addon_url: YOUR_HOSTED_ADDON_URL
+
+    # minify assets before installing
+    minify: true
+
