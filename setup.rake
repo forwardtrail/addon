@@ -285,11 +285,15 @@ class AddonTask
     puts "UPDATING TOOLS...\n"
 
     require 'open-uri'
+    require 'byebug';byebug
 
-    # TODO: update tools.rake
+    # update tools.rake
+    setup_rake_content = open("https://raw.githubusercontent.com/forwardtrail/addon/master/setup.rake").read
+    File.open(__FILE__, 'w') { |file| file.write(setup_rake_content) }
+
     # TODO: check dependencies on Gemfile, instruct user to add gem dependencies for anything missing
 
-    # TODO: run bundle
+    # bundle gems
     system("bundle")
 
     puts "\n\nTools updated!\n\nNext steps:"
