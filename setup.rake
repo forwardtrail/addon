@@ -3,7 +3,7 @@
 # don't modify this file, it's automatically updated via `rake setup`
 ######
 
-class AddonSetup
+class AddonTask
   def initialize
     begin
       require 'yaml'
@@ -290,7 +290,7 @@ class AddonSetup
     # TODO: check dependencies on Gemfile, instruct user to add gem dependencies for anything missing
 
     # TODO: run bundle
-    puts `bundle`
+    system("bundle")
 
     puts "\n\nTools updated!\n\nNext steps:"
     puts "- `rake install` to install your addon to ForwardTrail"
@@ -306,27 +306,27 @@ end
 
 desc "Install this Addon onto the ForwardTrail server"
 task :install do
-  AddonSetup.new.install
+  AddonTask.new.install
 end
 
 desc "Updates the icon for this addon"
 task :update_icon do
-  AddonSetup.new.update_icon
+  AddonTask.new.update_icon
 end
 
 desc "Uninstall this Addon off of the ForwardTrail server"
 task :uninstall do
-  AddonSetup.new.uninstall
+  AddonTask.new.uninstall
 end
 
 desc "Pull the latest tools (setup.rake)"
 task :setup do
-  AddonSetup.setup
+  AddonTask.setup
 end
 
 desc "Start local dev server"
 task :server do
-  system("shotgun --server=puma --port=#{AddonSetup.new.local_port} server/addon.rb")
+  system("shotgun --server=puma --port=#{AddonTask.new.local_port} server/addon.rb")
 end
 
 desc "Generate a secret"

@@ -1,18 +1,19 @@
 class Event
-  def initialize(data)
-    @data = data.with_indifferent_hash
-    @account = @data["account"]
-    @addon = @data["addon"]
-    @event = @data["event"]
+  def initialize(event)
+    @event = event.with_indifferent_access
+    @account = @event["account"]
+    @settings = @account["addon_settings"]
+    @type = @event["type"]
+    @data = @event["data"]
   end
 
   def process!
     puts "RECEIVED NEW EVENT.."
-    puts event.inspect
+    puts @event.inspect
 
     # TODO: handle event
 
-    case @event["type"]
+    case @type
     when "register"
       register
     when "unregister"
@@ -38,6 +39,5 @@ class Event
     # handle update_settings event
     puts "RECEIVED UPDATE_SETTINGS EVENT"
   end
-
 
 end

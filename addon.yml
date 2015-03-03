@@ -57,6 +57,7 @@ event_types:
 environments:
   # your production ForwardTrail account
   production:
+    # find your api key on your "team" page at https://www.forwardtrail.com
     api_key: YOUR_API_KEY
     api_host: "https://www.forwardtrail.com"
 
@@ -68,6 +69,7 @@ environments:
 
   # your development ForwardTrail account
   development:
+    # find your api key on your "team" page at https://www.forwardtrail.com
     api_key: YOUR_API_KEY
     api_host: "https://www.forwardtrail.com"
 
