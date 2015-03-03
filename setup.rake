@@ -285,7 +285,6 @@ class AddonTask
     puts "UPDATING TOOLS...\n"
 
     require 'open-uri'
-    require 'byebug';byebug
 
     # update tools.rake
     setup_rake_content = open("https://raw.githubusercontent.com/forwardtrail/addon/master/setup.rake").read
