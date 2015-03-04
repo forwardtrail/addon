@@ -1,9 +1,11 @@
 class Event
-  def initialize(event)
-    @event = event.with_indifferent_access
-    @account = @event["account"]
+
+  def initialize(data)
+    @data = data.with_indifferent_access
+    @account = @data["account"]
     @settings = @account["addon_settings"]
-    @type = @event["type"]
+    @event = @data["event"]
+    @type = @event["event_type"]
     @data = @event["data"]
   end
 
