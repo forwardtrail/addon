@@ -11,10 +11,11 @@ gem "oj"
 # web server
 gem "puma"
 
+gem "activesupport"
+gem "json"
+
 group :development do
   gem "github-markup"
-  gem "activesupport"
-  gem "json"
 
   gem "sass"
   gem "coffee-script"
