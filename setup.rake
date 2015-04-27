@@ -146,8 +146,9 @@ class AddonTask
   end
 
   def compile_embedded_js(base_path)
-    # TODO: look for widgets
     # TODO: look for topnav override
+    # TODO: look for widgets
+    # TODO: look for buttons
   end
 
   def update_icon
@@ -214,9 +215,9 @@ class AddonTask
     @addon["webhook"] = @server["addon_url"]
 
     # compile CSS
-    sass_path = File.expand_path("./addon.sass", addon_base)
-    scss_path = File.expand_path("./addon.scss", addon_base)
-    css_path = File.expand_path("./addon.css", addon_base)
+    sass_path = File.expand_path("./client/addon.sass", addon_base)
+    scss_path = File.expand_path("./client/addon.scss", addon_base)
+    css_path = File.expand_path("./client/addon.css", addon_base)
     if File.exists?(sass_path)
       embedded_css = compile_sass(sass_path)
     elsif File.exists?(scss_path)
