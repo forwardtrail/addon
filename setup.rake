@@ -116,8 +116,13 @@ class AddonTask
   end
 
   def compile_coffee(file)
+    js = CoffeeScript.compile File.read(file)
 
-    CoffeeScript.compile File.read(file)
+    if @addon["js"].try(:[], "minify")
+      Uglifier.compile(js, :mangle => false)
+    else
+      js
+    end
   end
 
   def compile_js(file)
@@ -146,9 +151,32 @@ class AddonTask
   end
 
   def compile_embedded_js(base_path)
-    # TODO: look for topnav override
-    # TODO: look for widgets
-    # TODO: look for buttons
+    scripts = []
+
+    Dir["#{base_path}/**/*.js"].each do |path|
+      scripts << compile_js(path)
+    end
+    Dir["#{base_path}/**/*.coffee"].each do |path|
+      scripts << compile_coffee(path)
+    end
+
+    scripts.join("\n\n")
+  end
+
+  def compile_embedded_css(base_path)
+    stylesheets = []
+
+    Dir["#{base_path}/**/*.sass"].each do |path|
+      stylesheets << compile_sass(path)
+    end
+    Dir["#{base_path}/**/*.scss"].each do |path|
+      stylesheets << compile_sass(path)
+    end
+    Dir["#{base_path}/**/*.css"].each do |path|
+      stylesheets << compile_css(path)
+    end
+
+    stylesheets.join("\n\n")
   end
 
   def update_icon
@@ -215,22 +243,13 @@ class AddonTask
     @addon["webhook"] = @server["addon_url"]
 
     # compile CSS
-    sass_path = File.expand_path("./client/addon.sass", addon_base)
-    scss_path = File.expand_path("./client/addon.scss", addon_base)
-    css_path = File.expand_path("./client/addon.css", addon_base)
-    if File.exists?(sass_path)
-      embedded_css = compile_sass(sass_path)
-    elsif File.exists?(scss_path)
-      embedded_css = compile_sass(scss_path)
-    elsif File.exists?(css_path)
-      embedded_css = compile_css(css_path)
-    end
+    embedded_css = compile_embedded_css("#{addon_base}/client")
     if embedded_css.present?
       @addon["embedded_css"] = embedded_css
     end
 
     # compile JS
-    embedded_js = compile_embedded_js(addon_base)
+    embedded_js = compile_embedded_js("#{addon_base}/client")
     if embedded_js.present?
       @addon["embedded_js"] = embedded_js
     end
