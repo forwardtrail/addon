@@ -98,7 +98,7 @@ class AddonTask
     if @addon["sass"].try(:[], "style").present?
       style = @addon["sass"].try(:[], "style").to_s.to_sym
     else
-      style = :compact
+      style = :nested
     end
 
     engine = Sass::Engine.new(File.read(file), :syntax => syntax, :style => style)
@@ -106,33 +106,18 @@ class AddonTask
   end
 
   def compile_css(file)
-    css = File.read(file)
-
-    if @addon["css"].try(:[], "minify")
-      CSSminify.compress(css)
-    else
-      css
-    end
+    File.read(file)
   end
 
   def compile_coffee(file)
-    js = CoffeeScript.compile File.read(file)
-
-    if @addon["js"].try(:[], "minify")
-      Uglifier.compile(js, :mangle => false)
-    else
-      js
-    end
+    CoffeeScript.compile File.read(file).strip
   end
 
   def compile_js(file)
-    js = File.read(file)
+    js = File.read(file).strip
 
-    if @addon["js"].try(:[], "minify")
-      Uglifier.compile(js, :mangle => false)
-    else
-      js
-    end
+    # wrap in anonymous call
+    "(function() {\n#{js}\n}).call(this);"
   end
 
   def wrap_http
@@ -160,7 +145,12 @@ class AddonTask
       scripts << compile_coffee(path)
     end
 
-    scripts.join("\n\n")
+    js = scripts.join("\n\n")
+    if minify?
+      Uglifier.compile(js, :mangle => false)
+    else
+      js
+    end
   end
 
   def compile_embedded_css(base_path)
@@ -176,7 +166,13 @@ class AddonTask
       stylesheets << compile_css(path)
     end
 
-    stylesheets.join("\n\n")
+    css = stylesheets.join("\n\n")
+
+    if minify?
+      CSSminify.compress(css)
+    else
+      css
+    end
   end
 
   def update_icon
@@ -323,6 +319,14 @@ class AddonTask
   def show_error(msg)
     puts "** #{msg} **"
     exit
+  end
+
+  def minify?
+    if @server.has_key?("minify")
+      @server["minify"]
+    else
+      @addon["minify"]
+    end
   end
 
 end
