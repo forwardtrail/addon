@@ -16,6 +16,8 @@ class AddonTask
       require 'sass'
       require 'cssminify'
       require 'uglifier'
+      require 'erb'
+      require 'ostruct'
 
     rescue Exception => e
       puts "\nMissing dependency: #{e.to_s}\n\n"
@@ -101,23 +103,32 @@ class AddonTask
       style = :nested
     end
 
-    engine = Sass::Engine.new(File.read(file), :syntax => syntax, :style => style)
+    engine = Sass::Engine.new(read_file(file), :syntax => syntax, :style => style)
     engine.render
   end
 
   def compile_css(file)
-    File.read(file)
+    read_file(file)
   end
 
   def compile_coffee(file)
-    CoffeeScript.compile File.read(file).strip
+    CoffeeScript.compile read_file(file)
   end
 
   def compile_js(file)
-    js = File.read(file).strip
+    js = read_file(file)
 
     # wrap in anonymous call
     "(function() {\n#{js}\n}).call(this);"
+  end
+
+  # read file content, using ERB
+  def read_file(file)
+    namespace = OpenStruct.new({
+      addon: @addon,
+      server: @server,
+    })
+    ERB.new(File.read(file)).result(namespace.instance_eval { binding }).strip
   end
 
   def wrap_http
