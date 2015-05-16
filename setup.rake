@@ -6,18 +6,18 @@
 class AddonTask
   def initialize
     begin
-      require 'yaml'
-      require 'active_support/all'
+      require "yaml"
+      require "active_support/all"
 
-      require 'github/markup'
+      require "github/markup"
       require "json"
       require "rest_client"
-      require 'coffee-script'
-      require 'sass'
-      require 'cssminify'
-      require 'uglifier'
-      require 'erb'
-      require 'ostruct'
+      require "coffee-script"
+      require "sass"
+      require "cssminify"
+      require "uglifier"
+      require "erb"
+      require "ostruct"
 
     rescue Exception => e
       puts "\nMissing dependency: #{e.to_s}\n\n"
@@ -37,26 +37,26 @@ class AddonTask
 
     addon_settings = YAML.load_file(addon_settings_path)
 
-
     # default addon env to development
     environment = ENV["ADDON_ENV"].to_s.presence || "development"
 
+    # get addon settings
     @addon = addon_settings.dup.except("environments")
-    @server = addon_settings["environments"][environment]
+    @addon.merge!(addon_settings["environments"][environment])
 
     if @addon["name"].blank?
       show_error("please set a valid addon \"name\" setting in your addon.yml file")
     end
 
     # default host if not set
-    @server["api_host"] = @server["api_host"].presence || "https://www.forwardtrail.com"
+    @addon["api_host"] = @addon["api_host"].presence || "https://www.forwardtrail.com"
     puts "ForwardTrail Addon: #{@addon['name']}. environment: #{environment}"
-    puts "host: #{@server['api_host']}"
+    puts "host: #{@addon['api_host']}"
 
     # get api key based on environment
     # TODO
 
-    api_key = @server["api_key"]
+    api_key = @addon["api_key"]
     if api_key.blank? or api_key == "YOUR_API_KEY"
       puts "********"
       puts "Please fill out your 'api_key' in addon.yml (under 'environments' -> '#{environment}')"
@@ -86,7 +86,7 @@ class AddonTask
 
   def local_port
     require 'uri'
-    URI.parse(@server["addon_url"]).port
+    URI.parse(@addon["addon_url"]).port
   end
 
   def compile_sass(file)
@@ -126,7 +126,6 @@ class AddonTask
   def read_file(file)
     namespace = OpenStruct.new({
       addon: @addon,
-      server: @server,
     })
     ERB.new(File.read(file)).result(namespace.instance_eval { binding }).strip
   end
@@ -135,14 +134,14 @@ class AddonTask
     begin
       yield
     rescue Errno::ECONNREFUSED => e
-      show_error("ForwardTrail (#{@server['api_host']}) is not currently responding: \"#{e.message}\" **\n** Sorry about that! Please email this output to support@forwardtrail.com and we'll get back to you ASAP.")
+      show_error("ForwardTrail (#{@addon['api_host']}) is not currently responding: \"#{e.message}\" **\n** Sorry about that! Please email this output to support@forwardtrail.com and we'll get back to you ASAP.")
     rescue RestClient::InternalServerError => e
-      show_error("ForwardTrail ((#{@server['api_host']}) responded with a server error: \"#{e.message}\" **\n** Sorry about that! We'll look into it ASAP, please email us at support@forwardtrail.com.")
+      show_error("ForwardTrail ((#{@addon['api_host']}) responded with a server error: \"#{e.message}\" **\n** Sorry about that! We'll look into it ASAP, please email us at support@forwardtrail.com.")
     rescue => e
       puts
       puts e.to_s
       puts
-      show_error("ForwardTrail ((#{@server['api_host']}) responded with an error. **\n** Sorry about that! Please email this output to support@forwardtrail.com and we'll get back to you ASAP.")
+      show_error("ForwardTrail ((#{@addon['api_host']}) responded with an error. **\n** Sorry about that! Please email this output to support@forwardtrail.com and we'll get back to you ASAP.")
     end
   end
 
@@ -193,10 +192,10 @@ class AddonTask
       wrap_http do
         request = RestClient::Request.new({
           method: :post,
-          url: "#{@server['api_host']}/api/v1/addons/#{@addon['name']}/icon",
+          url: "#{@addon['api_host']}/api/v1/addons/#{@addon['name']}/icon",
           headers: {
             :accept => :json,
-            'X-API-KEY' => @server['api_key']
+            'X-API-KEY' => @addon['api_key']
           },
           payload: {
             multipart: true,
@@ -247,7 +246,7 @@ class AddonTask
     end
     @addon["settings"] = addon_options
 
-    @addon["webhook"] = @server["addon_url"]
+    @addon["webhook"] = @addon["addon_url"]
 
     # compile CSS
     embedded_css = compile_embedded_css("#{addon_base}/client")
@@ -268,7 +267,7 @@ class AddonTask
     # require 'byebug';byebug
     result = nil
     wrap_http do
-      result = RestClient.post "#{@server['api_host']}/api/v1/addons", post_json, :content_type => :json, :accept => :json, 'X-API-KEY' => @server['api_key']
+      result = RestClient.post "#{@addon['api_host']}/api/v1/addons", post_json, :content_type => :json, :accept => :json, 'X-API-KEY' => @addon['api_key']
     end
 
     response = {}
@@ -297,7 +296,7 @@ class AddonTask
 
   def uninstall
     wrap_http do
-      result = RestClient.delete "#{@server['api_host']}/api/v1/addons/#{@addon['name']}",:content_type => :json, :accept => :json, 'X-API-KEY' => @server['api_key']
+      result = RestClient.delete "#{@addon['api_host']}/api/v1/addons/#{@addon['name']}",:content_type => :json, :accept => :json, 'X-API-KEY' => @addon['api_key']
 
       response = {}
       response = JSON.parse(result) if result.try(:code) == 200
@@ -333,11 +332,7 @@ class AddonTask
   end
 
   def minify?
-    if @server.has_key?("minify")
-      @server["minify"]
-    else
-      @addon["minify"]
-    end
+    @addon["minify"]
   end
 
 end
